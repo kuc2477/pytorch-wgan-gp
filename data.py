@@ -27,6 +27,12 @@ _CIFAR_TEST_TRANSFORMS = [
     ),
 ]
 
+_SHVN_TRAIN_TRANSFORMS = _SHVN_TEST_TRANSFORMS = [
+    transforms.Scale(32),
+    transforms.ToTensor(),
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+]
+
 
 TRAIN_DATASETS = {
     'mnist': datasets.MNIST(
@@ -40,6 +46,10 @@ TRAIN_DATASETS = {
     'cifar100': datasets.CIFAR100(
         './datasets/cifar100', train=True, download=True,
         transform=transforms.Compose(_CIFAR_TRAIN_TRANSFORMS)
+    ),
+    'shvn': datasets.SVHN(
+        './datasets/shvn', download=True, split='train',
+        transform=transforms.Compose(_SHVN_TEST_TRANSFORMS)
     )
 }
 
@@ -56,6 +66,10 @@ TEST_DATASETS = {
     'cifar100': datasets.CIFAR100(
         './datasets/cifar100', train=False,
         transform=transforms.Compose(_CIFAR_TEST_TRANSFORMS)
+    ),
+    'shvn': datasets.SVHN(
+        './datasets/shvn', download=True, split='test',
+        transform=transforms.Compose(_SHVN_TEST_TRANSFORMS)
     )
 }
 
@@ -64,4 +78,5 @@ DATASET_CONFIGS = {
     'mnist': {'size': 32, 'channels': 1, 'classes': 10},
     'cifar10': {'size': 32, 'channels': 3, 'classes': 10},
     'cifar100': {'size': 32, 'channels': 3, 'classes': 100},
+    'shvn': {'size': 32, 'channels': 3},
 }

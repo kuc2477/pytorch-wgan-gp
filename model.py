@@ -80,8 +80,8 @@ class Generator(nn.Module):
 
 
 class WGAN(nn.Module):
-    def __init__(self,
-                 z_size, image_size, image_channel_size,
+    def __init__(self, label, z_size,
+                 image_size, image_channel_size,
                  c_channel_size, g_channel_size):
         # configurations
         super().__init__()
