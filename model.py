@@ -104,16 +104,16 @@ class WGAN(nn.Module):
             channel_size=self.g_channel_size,
         )
 
-    def forward(self, z, x=None):
-        # generate the fake image from the given noise z.
+    def forward(self, z, x=None, retrieve_generated_images=False):
         g = self.generator(z)
-
-        # when training the critic. (-wasserstein distance between x and g)
-        if x is not None:
-            return -(self.critic(x)-self.critic(g))
-        # when training the generator. (wasserstein distance without x)
-        else:
-            return -self.critic(g)
+        loss = (
+            # when training the generator
+            -self.critic(g) if x is None else
+            # when training the critic
+            -(self.critic(x)-self.critic(g))
+        )
+        # return the loss and generated images (if needed).
+        return (loss, g) if retrieve_generated_images else loss
 
     def sample_image(self, size):
         return self.generator(self.sample_noise(size))
