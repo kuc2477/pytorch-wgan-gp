@@ -26,6 +26,10 @@ class Critic(nn.Module):
             channel_size*2, channel_size*4,
             kernel_size=3, stride=2, padding=1
         )
+        self.conv4 = nn.Conv2d(
+            channel_size*4, channel_size*8,
+            kernel_size=3, stride=1, padding=1,
+        )
         self.fc = nn.Linear((image_size//8)**2 * channel_size*4, 1)
 
     def forward(self, x):

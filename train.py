@@ -71,7 +71,7 @@ def train(model, dataset,
 
             # update the progress.
             data_stream.set_description((
-                'epoch: {epoch} |'
+                'epoch: {epoch}/{epochs} |'
                 'iteration: {iteration} | '
                 'progress: [{trained}/{total}] ({progress:.0f}%) | '
                 'loss => '
@@ -79,6 +79,7 @@ def train(model, dataset,
                 'w: {w_dist:.4}'
             ).format(
                 epoch=epoch,
+                epochs=epochs,
                 iteration=iteration,
                 trained=batch_index*batch_size,
                 total=dataset_size,
@@ -112,4 +113,14 @@ def train(model, dataset,
 
             # save the model at checkpoints.
             if iteration % checkpoint_interval == 0:
+                # notify that we've reached to a new checkpoint.
+                print()
+                print()
+                print('#############')
+                print('# checkpoint!')
+                print('#############')
+                print()
+
                 utils.save_checkpoint(model, checkpoint_dir, iteration)
+
+                print()
