@@ -21,10 +21,12 @@ parser.add_argument('--c-channel-size', type=int, default=64)
 parser.add_argument('--lamda', type=float, default=10.)
 
 parser.add_argument('--lr', type=float, default=1e-04)
-parser.add_argument('--lr-decay', type=float, default=1e-04)
+parser.add_argument('--weight-decay', type=float, default=0)
+parser.add_argument('--beta1', type=float, default=0.5)
+parser.add_argument('--beta2', type=float, default=0.9)
 parser.add_argument('--epochs', type=int, default=10)
-parser.add_argument('--batch-size', type=int, default=32)
-parser.add_argument('--sample-size', type=int, default=32)
+parser.add_argument('--batch-size', type=int, default=64)
+parser.add_argument('--sample-size', type=int, default=36)
 parser.add_argument('--d-trains-per-g-train', type=int, default=2)
 
 parser.add_argument('--sample-dir', type=str, default='samples')
@@ -43,7 +45,7 @@ command.add_argument('--train', action='store_false', dest='test')
 if __name__ == '__main__':
     args = parser.parse_args()
     cuda = torch.cuda.is_available() and args.cuda
-    dataset = TRAIN_DATASETS[args.dataset]
+    dataset = TRAIN_DATASETS[args.dataset]()
     dataset_config = DATASET_CONFIGS[args.dataset]
 
     wgan = WGAN(
@@ -55,6 +57,8 @@ if __name__ == '__main__':
         g_channel_size=args.g_channel_size,
     )
 
+    utils.xavier_initialize(wgan)
+
     if cuda:
         wgan.cuda()
 
@@ -63,4 +67,21 @@ if __name__ == '__main__':
         utils.load_checkpoint(wgan, args.checkpoint_dir)
         utils.test_model(wgan, args.sample_size, path)
     else:
-        train(wgan, dataset)
+        train(
+            wgan, dataset,
+            lr=args.lr,
+            weight_decay=args.weight_decay,
+            beta1=args.beta1,
+            beta2=args.beta2,
+            lamda=args.lamda,
+            batch_size=args.batch_size,
+            sample_size=args.sample_size,
+            epochs=args.epochs,
+            d_trains_per_g_train=args.d_trains_per_g_train,
+            checkpoint_dir=args.checkpoint_dir,
+            checkpoint_interval=args.checkpoint_interval,
+            image_log_interval=args.image_log_interval,
+            loss_log_interval=args.loss_log_interval,
+            resume=args.resume,
+            cuda=cuda,
+        )

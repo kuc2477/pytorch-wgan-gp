@@ -102,4 +102,5 @@ ENV/
 
 
 datasets/
+checkpoints/
 .env

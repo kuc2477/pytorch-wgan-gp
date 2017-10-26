@@ -6,48 +6,38 @@ _MNIST_TRAIN_TRANSFORMS = _MNIST_TEST_TRANSFORMS = [
     transforms.ToPILImage(),
     transforms.Pad(2),
     transforms.ToTensor(),
-    transforms.Normalize((0.1307,), (0.3081,))
 ]
 
 _CIFAR_TRAIN_TRANSFORMS = [
     transforms.RandomCrop(32, padding=4),
     transforms.RandomHorizontalFlip(),
     transforms.ToTensor(),
-    transforms.Normalize(
-        (0.4914, 0.4822, 0.4465),
-        (0.2023, 0.1994, 0.2010)
-    ),
 ]
 
 _CIFAR_TEST_TRANSFORMS = [
     transforms.ToTensor(),
-    transforms.Normalize(
-        (0.4914, 0.4822, 0.4465),
-        (0.2023, 0.1994, 0.2010)
-    ),
 ]
 
 _SHVN_TRAIN_TRANSFORMS = _SHVN_TEST_TRANSFORMS = [
     transforms.Scale(32),
     transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
 ]
 
 
 TRAIN_DATASETS = {
-    'mnist': datasets.MNIST(
+    'mnist': lambda: datasets.MNIST(
         './datasets/mnist', train=True, download=True,
         transform=transforms.Compose(_MNIST_TRAIN_TRANSFORMS)
     ),
-    'cifar10': datasets.CIFAR10(
+    'cifar10': lambda: datasets.CIFAR10(
         './datasets/cifar10', train=True, download=True,
         transform=transforms.Compose(_CIFAR_TRAIN_TRANSFORMS)
     ),
-    'cifar100': datasets.CIFAR100(
+    'cifar100': lambda: datasets.CIFAR100(
         './datasets/cifar100', train=True, download=True,
         transform=transforms.Compose(_CIFAR_TRAIN_TRANSFORMS)
     ),
-    'shvn': datasets.SVHN(
+    'shvn': lambda: datasets.SVHN(
         './datasets/shvn', download=True, split='train',
         transform=transforms.Compose(_SHVN_TEST_TRANSFORMS)
     )
@@ -55,19 +45,19 @@ TRAIN_DATASETS = {
 
 
 TEST_DATASETS = {
-    'mnist': datasets.MNIST(
+    'mnist': lambda: datasets.MNIST(
         './datasets/mnist', train=False,
         transform=transforms.Compose(_MNIST_TEST_TRANSFORMS)
     ),
-    'cifar10': datasets.CIFAR10(
+    'cifar10': lambda: datasets.CIFAR10(
         './datasets/cifar10', train=False,
         transform=transforms.Compose(_CIFAR_TEST_TRANSFORMS)
     ),
-    'cifar100': datasets.CIFAR100(
+    'cifar100': lambda: datasets.CIFAR100(
         './datasets/cifar100', train=False,
         transform=transforms.Compose(_CIFAR_TEST_TRANSFORMS)
     ),
-    'shvn': datasets.SVHN(
+    'shvn': lambda: datasets.SVHN(
         './datasets/shvn', download=True, split='test',
         transform=transforms.Compose(_SHVN_TEST_TRANSFORMS)
     )

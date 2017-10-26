@@ -5,22 +5,23 @@ import utils
 import visual
 
 
-def train(model, dataset, checkpoint_dir='checkpoints',
-          lr=1e-04, lr_decay=1e-04, lamda=10.,
+def train(model, dataset,
+          lr=1e-04, weight_decay=1e-04, beta1=0.5, beta2=.999, lamda=10.,
           batch_size=32, sample_size=32, epochs=10,
           d_trains_per_g_train=2,
+          checkpoint_dir='checkpoints',
           checkpoint_interval=1000,
           image_log_interval=100,
           loss_log_interval=30,
           resume=False, cuda=False):
     # define the optimizers.
     generator_optimizer = optim.Adam(
-        model.generator.parameters(), lr=lr,
-        weight_decay=lr_decay
+        model.generator.parameters(), lr=lr, betas=(beta1, beta2),
+        weight_decay=weight_decay
     )
     critic_optimizer = optim.Adam(
-        model.critic.parameters(), lr=lr,
-        weight_decay=lr_decay
+        model.critic.parameters(), lr=lr, betas=(beta1, beta2),
+        weight_decay=weight_decay
     )
 
     # prepare the model and statistics.
@@ -47,38 +48,43 @@ def train(model, dataset, checkpoint_dir='checkpoints',
 
             # prepare the data.
             x = Variable(x).cuda() if cuda else Variable(x)
+            d_trains = (
+                30 if (batch_index < 25 or batch_index % 500 == 0) else
+                d_trains_per_g_train
+            )
 
             # run the critic and backpropagate the errors.
-            for _ in range(d_trains_per_g_train):
+            for _ in range(d_trains):
                 critic_optimizer.zero_grad()
                 z = model.sample_noise(batch_size)
-                c_loss, g = model(z, x, retrieve_generated_images=True)
-                c_loss += model.gradient_penalty(x, g, lamda=lamda)
-                c_loss.backward()
+                c_loss, g = model.c_loss(x, z, return_g=True)
+                c_loss_gp = c_loss + model.gradient_penalty(x, g, lamda=lamda)
+                c_loss_gp.backward()
                 critic_optimizer.step()
 
             # run the generator and backpropagate the errors.
             generator_optimizer.zero_grad()
-            g_loss = model(z)
+            z = model.sample_noise(batch_size)
+            g_loss = model.g_loss(z)
             g_loss.backward()
             generator_optimizer.step()
 
             # update the progress.
             data_stream.set_description((
                 'epoch: {epoch} |'
-                'iteration: {iteration} |'
+                'iteration: {iteration} | '
                 'progress: [{trained}/{total}] ({progress:.0f}%) | '
                 'loss => '
                 'g: {g_loss:.4} / '
-                'w: {w_dist:.4} / '
+                'w: {w_dist:.4}'
             ).format(
                 epoch=epoch,
                 iteration=iteration,
                 trained=batch_index*batch_size,
                 total=dataset_size,
                 progress=(100.*batch_index/dataset_batches),
-                g_loss=g_loss,
-                w_dist=-c_loss,
+                g_loss=g_loss.data[0],
+                w_dist=-c_loss.data[0],
             ))
 
             # send losses to the visdom server.
@@ -99,7 +105,7 @@ def train(model, dataset, checkpoint_dir='checkpoints',
             # send sample images to the visdom server.
             if iteration % image_log_interval == 0:
                 visual.visualize_images(
-                    model.sample_image(32),
+                    model.sample_image(sample_size).data,
                     'generated samples',
                     env=model.name
                 )

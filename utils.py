@@ -2,12 +2,13 @@ import os
 import os.path
 import torch
 from torch.utils.data import DataLoader
+from torch.nn import init
 import torchvision
 
 
 def get_data_loader(dataset, batch_size, cuda=False):
     return DataLoader(
-        dataset, batch_size=batch_size, shuffle=True,
+        dataset, batch_size=batch_size, shuffle=True, drop_last=True,
         **({'num_workers': 1, 'pin_memory': True} if cuda else {})
     )
 
@@ -53,3 +54,25 @@ def test_model(model, sample_size, path):
         path
     )
     print('=> generated sample images at "{}".'.format(path))
+
+
+def xavier_initialize(model):
+    modules = [
+        m for n, m in model.named_modules() if
+        'conv' in n or 'fc' in n
+    ]
+
+    parameters = [
+        p for
+        m in modules for
+        p in m.parameters() if
+        p.dim() >= 2
+    ]
+
+    for p in parameters:
+        init.xavier_normal(p)
+
+
+def gaussian_intiailize(model, std=.01):
+    for p in model.parameters():
+        init.normal(p, std=std)
