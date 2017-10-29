@@ -5,7 +5,10 @@ PyTorch implementation of [Improved Training of Wasserstein GANs, arxiv:1704.000
 
 
 ## Results
-WIP
+
+Generated samples after training 1 epoch on LSUN Bedroom dataset
+
+![generated samples](./arts/generated_samples.jpg)
 
 
 ## Installation
@@ -15,7 +18,22 @@ $ pip install -r requirements.txt
 ```
 
 ## CLI
-WIP
+
+#### Train
+```
+$ # To download LSUN dataset (optional)
+$ ./lsun.py --category=bedroom          
+
+$ # Run a visdom server and start training on LSUN dataset.
+$ python -m visdom.server
+$ ./main.py --dataset=lsun [--resume]
+```
+
+#### Test
+```
+$ ./main.py --test --dataset=lsun
+$ # checkout "./samples" directory.
+```
 
 
 ## References

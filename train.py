@@ -5,7 +5,7 @@ import utils
 import visual
 
 
-def train(model, dataset,
+def train(model, dataset, collate_fn=None,
           lr=1e-04, weight_decay=1e-04, beta1=0.5, beta2=.999, lamda=10.,
           batch_size=32, sample_size=32, epochs=10,
           d_trains_per_g_train=2,
@@ -34,10 +34,18 @@ def train(model, dataset,
         epoch_start = iteration // (len(dataset) // batch_size) + 1
 
     for epoch in range(epoch_start, epochs+1):
-        data_loader = utils.get_data_loader(dataset, batch_size, cuda=cuda)
+        data_loader = utils.get_data_loader(
+            dataset, batch_size,
+            cuda=cuda, collate_fn=collate_fn,
+        )
         data_stream = tqdm(enumerate(data_loader, 1))
+        for batch_index, data in data_stream:
+            # unpack the data if needed.
+            try:
+                x, _ = data
+            except ValueError:
+                x = data
 
-        for batch_index, (x, _) in data_stream:
             # where are we?
             dataset_size = len(data_loader.dataset)
             dataset_batches = len(data_loader)

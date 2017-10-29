@@ -2,14 +2,17 @@ import os
 import os.path
 import torch
 from torch.utils.data import DataLoader
+from torch.utils.data.dataloader import default_collate
 from torch.nn import init
 import torchvision
 
 
-def get_data_loader(dataset, batch_size, cuda=False):
+def get_data_loader(dataset, batch_size, cuda=False, collate_fn=None):
+    collate_fn = collate_fn or default_collate
     return DataLoader(
-        dataset, batch_size=batch_size, shuffle=True, drop_last=True,
-        **({'num_workers': 1, 'pin_memory': True} if cuda else {})
+        dataset, batch_size=batch_size,
+        shuffle=True, drop_last=True, collate_fn=collate_fn,
+        **({'num_workers': 0, 'pin_memory': True} if cuda else {})
     )
 
 
@@ -48,10 +51,10 @@ def load_checkpoint(model, model_dir):
 
 
 def test_model(model, sample_size, path):
-    os.makedirs(os.path.basename(path), exists_ok=True)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     torchvision.utils.save_image(
-        model.sample_image(sample_size),
-        path
+        model.sample_image(sample_size).data,
+        path + '.jpg'
     )
     print('=> generated sample images at "{}".'.format(path))
 
@@ -65,14 +68,30 @@ def xavier_initialize(model):
     parameters = [
         p for
         m in modules for
-        p in m.parameters() if
-        p.dim() >= 2
+        p in m.parameters()
     ]
 
     for p in parameters:
-        init.xavier_normal(p)
+        if p.dim() >= 2:
+            init.xavier_normal(p)
+        else:
+            init.constant(p, 0)
 
 
 def gaussian_intiailize(model, std=.01):
-    for p in model.parameters():
-        init.normal(p, std=std)
+    modules = [
+        m for n, m in model.named_modules() if
+        'conv' in n or 'fc' in n
+    ]
+
+    parameters = [
+        p for
+        m in modules for
+        p in m.parameters()
+    ]
+
+    for p in parameters:
+        if p.dim() >= 2:
+            init.normal(p, std=std)
+        else:
+            init.constant(p, 0)

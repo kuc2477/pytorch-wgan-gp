@@ -16,19 +16,19 @@ class Critic(nn.Module):
         # layers
         self.conv1 = nn.Conv2d(
             image_channel_size, channel_size,
-            kernel_size=3, stride=2, padding=1
+            kernel_size=4, stride=2, padding=1
         )
         self.conv2 = nn.Conv2d(
             channel_size, channel_size*2,
-            kernel_size=3, stride=2, padding=1
+            kernel_size=4, stride=2, padding=1
         )
         self.conv3 = nn.Conv2d(
             channel_size*2, channel_size*4,
-            kernel_size=3, stride=2, padding=1
+            kernel_size=4, stride=2, padding=1
         )
         self.conv4 = nn.Conv2d(
             channel_size*4, channel_size*8,
-            kernel_size=3, stride=1, padding=1,
+            kernel_size=4, stride=1, padding=1,
         )
         self.fc = nn.Linear((image_size//8)**2 * channel_size*4, 1)
 
@@ -36,6 +36,7 @@ class Critic(nn.Module):
         x = F.leaky_relu(self.conv1(x))
         x = F.leaky_relu(self.conv2(x))
         x = F.leaky_relu(self.conv3(x))
+        x = F.leaky_relu(self.conv4(x))
         x = x.view(-1, (self.image_size//8)**2 * self.channel_size*4)
         return self.fc(x)
 
@@ -69,7 +70,7 @@ class Generator(nn.Module):
         )
         self.deconv4 = nn.ConvTranspose2d(
             channel_size, image_channel_size,
-            kernel_size=3, stride=1, padding=1,
+            kernel_size=3, stride=1, padding=1
         )
 
     def forward(self, z):
@@ -83,7 +84,7 @@ class Generator(nn.Module):
         g = F.relu(self.bn2(self.deconv2(g)))
         g = F.relu(self.bn3(self.deconv3(g)))
         g = self.deconv4(g)
-        return F.tanh(g) if self.image_channel_size > 1 else F.sigmoid(g)
+        return F.sigmoid(g)
 
 
 class WGAN(nn.Module):
@@ -145,7 +146,7 @@ class WGAN(nn.Module):
         return self.generator(self.sample_noise(size))
 
     def sample_noise(self, size):
-        z = Variable(torch.randn(size, self.z_size))
+        z = Variable(torch.randn(size, self.z_size)) * .1
         return z.cuda() if self._is_on_cuda() else z
 
     def gradient_penalty(self, x, g, lamda):

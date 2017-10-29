@@ -104,3 +104,5 @@ ENV/
 datasets/
 checkpoints/
 .env
+_cache_*
+.download.cgi*
