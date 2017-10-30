@@ -24,15 +24,15 @@ $ pip install -r requirements.txt
 $ # To download LSUN dataset (optional)
 $ ./lsun.py --category=bedroom          
 
-$ # Run a visdom server and start training on LSUN dataset.
+$ # To Run a Visdom server and start training on LSUN dataset.
 $ python -m visdom.server
-$ ./main.py --dataset=lsun [--resume]
+$ ./main.py --train --dataset=lsun [--resume]
 ```
 
 #### Test
 ```
+$ # checkout "./samples" directory
 $ ./main.py --test --dataset=lsun
-$ # checkout "./samples" directory.
 ```
 
 
