@@ -3,6 +3,7 @@ from torch import nn
 from torch.nn import functional as F
 from torch.autograd import Variable
 from torch import autograd
+from const import EPSILON
 
 
 class Critic(nn.Module):
@@ -172,7 +173,7 @@ class WGAN(nn.Module):
             create_graph=True,
             retain_graph=True,
         )[0]
-        return lamda * ((1-gradients.norm(2, dim=1))**2).mean()
+        return lamda * ((1-(gradients+EPSILON).norm(2, dim=1))**2).mean()
 
     def _is_on_cuda(self):
         return next(self.parameters()).is_cuda
