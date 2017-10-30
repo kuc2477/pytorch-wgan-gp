@@ -79,7 +79,7 @@ def train(model, dataset, collate_fn=None,
 
             # update the progress.
             data_stream.set_description((
-                'epoch: {epoch}/{epochs} |'
+                'epoch: {epoch}/{epochs} | '
                 'iteration: {iteration} | '
                 'progress: [{trained}/{total}] ({progress:.0f}%) | '
                 'loss => '
